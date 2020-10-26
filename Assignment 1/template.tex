@@ -1,0 +1,275 @@
+\documentclass{article}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{pifont}  % http://ctan.org/pkg/pifont
+
+\newcommand{\cmark}{\ding{51}}
+\newcommand{\xmark}{\ding{55}}
+\newcommand{\var}[1]{\mathit{#1}}
+
+\begin{document}
+
+\noindent
+University of Toronto\\
+{\sc csc}343, Fall 2019\\[10pt]
+{\LARGE\bf Assignment 1: Your name and student number here}
+
+\section*{Delete this before you hand in}
+
+\noindent
+Unary operators on relations:
+\begin{itemize}
+\item $\Pi_{x, y, z} (R)$
+\item $\sigma_{condition} (R) $
+\item $\rho_{New} (R) $
+\end{itemize}
+Binary operators on relations:
+\begin{itemize}
+\item $R \times S$
+\item $R \bowtie S$
+\item $R \bowtie_{condition} S$
+\item $R \cup S$
+\item $R \cap S$
+\item $R - S$
+\end{itemize}
+Logical operators:
+\begin{itemize}
+\item $\vee$
+\item $\wedge$
+\item $\neg$
+\end{itemize}
+Assignment:
+\begin{itemize}
+\item $New(a, b, c) := R$
+\end{itemize}
+General LaTeX tips:
+\begin{itemize}
+\item The characters ``\verb|\\|" create a line break and ``[5pt]" puts in 
+five points of extra vertical space.  The algebra is easier to read with extra
+vertical space.
+\item Some sequences of letters look terrible in ``math mode" (inside dollar signs).
+For example, \verb|$Offer$| comes out as $Offer$.
+You can use \verb|\var| to fix that.
+For example, \verb|$\var{Offer}$| comes out as $\var{Offer}$.
+\item When an expression is deeply nested, it can be hard to match the brackets with your eyes.
+You can vary the size of the brackets to make that easier.
+This LaTeX: \\[5pt]
+\hspace*{1cm} \verb+\Bigg(  \bigg[   \Big(  \big(   \big)  \Big)  \bigg]  \Bigg)+ \\[5pt]
+produces this result: \\[5pt]
+\hspace*{1cm}  \Bigg( \bigg[ \Big( \big(  \big) \Big) \bigg] \Bigg)
+\item 
+Some of your expressions will become very wide because there are multiple, long
+conditions on a select.
+You can stack those conditions using \verb|\substack|.
+Here's an example:
+$$
+\sigma_{\substack{x < 20 \\ \wedge \\ y = 10}} (\var{Some~big~expression}) \\[5pt]
+$$
+Notice that this requires using the package called ``amsmath", which is accomplished by saying\\
+\verb|\usepackage{amsmath}|.
+In the present file, we brought in a couple of other packages and made a couple of definitions
+(see the top of this file).
+\end{itemize}
+
+{~}\\
+Below is the text of the assignment questions; I suggest you include it in your solution.
+I also included a nonsense example of how a query might look in LaTeX.  
+As required in this assignment, it uses ``--" to indicate comments.
+Note that I have added less vertical space between comments
+and the algebra they pertain to than between steps in the algebra.
+This helps the comments visually stick to the algebra.
+
+\section*{Part 1: Queries}
+
+\begin{enumerate}
+\item
+Context: New staff need oversight, particularly volunteers,
+because learning the Chenhall system takes practise. \\[5pt]
+Query:
+Find the latest object catalogued by the newest volunteer.
+Report the volunteer's ID number and first name, as well as
+the object's description, type, and date of cataloguing.
+
+The possible ties are interesting in this query.
+For example, two volunteers could be tied for newest.
+They \textit{each} should be included in the result with their own latest-catalogued object(s),
+even if one volunteer's latest-catalogued object(s) were catalogued before the other
+volunteer's latest-catalogued object(s).
+
+{~}\\ % This puts a newline in to move the answer down a bit from the text above.
+{\large %This increase in font size makes the subscripts much more readable.
+-- sID has a grade of at least 85. \\[5pt]
+$
+HaveHighGrade(\var{sID}) := 
+	\Pi_{sID} 
+	\sigma_{grade \ge 85} 
+	Took \\[10pt]
+$
+-- sID passed a course taught by Atwood. \\[5pt]
+$
+PassedAtwood(\var{sID}) := 
+	\Pi_{\var{sID}} 
+	\sigma_{instructor := ``Atwood" \wedge grade \ge 50} 
+	(Took \bowtie \var{Offering}) 
+	\\[10pt]
+$
+-- sID got 100 at least twice. \\[5pt]
+$
+AtLeastTwice(\var{sID}) := \\[5pt]  %This RA statement is too long, so we break it into two lines.
+	\hspace*{1cm}  % This command creates an indentation
+	\Pi_{T1.\var{sID}} 
+	\sigma_{
+		T1.\var{oID} \neq T2.\var{oID} \wedge 
+		T1.\var{sID} = T2.\var{sID} \wedge 
+		T1.grade = 100 \wedge T2.grade = 100}
+	[ (\rho_{T1}Took) \times (\rho_{T2}Took) ] \\[5pt]
+$
+} % End of font size increase.
+
+\item
+Context: We are curious about donors who've made very broad contributions. \\[5pt]
+Query:
+For each donor who has made a donation in every Chenhall category in the database,
+report in a single tuple:
+\begin{itemize}
+\item the value of the single most valuable object they have ever donated, and
+\item the value of  the single least valuable object they have ever donated.
+\end{itemize}
+
+
+\item
+Context: There is no good reason for this query. :-) \\[5pt]
+Query:
+For each donation with three or more objects in it,
+report the second tallest object in the donation.
+Report the object's catalogue number, height, and width,
+as well as the ID of the donation it came from.
+
+
+\item
+Context: We are looking for donations that may contain unusual objects. \\[5pt]
+Query:
+Find any donation that was catalogued entirely by one staff person,
+where the same tag was used for at least 2 objects,
+but that tag was never used for any object catalogued by the same staff person
+in any other donation.
+For each such donation,
+report the donation ID and donor ID, and the staff member ID of the one person who
+catalogued it.
+
+
+\item
+Context: We want to bring back volunteers who used to help consistently but no longer do. \\[5pt]
+Query:
+Find all volunteers who have catalogued object(s) from at least two different donations
+every year up to and including in 2016,
+but have catalogued nothing since.
+By ``every year" we mean every year that appears in the \textit{Object} relation.
+For each of these volunteers,
+report their staff ID and email address.
+
+
+\item
+Context: For efficiency, it makes sense that a donation with very similar objects be catalogued by a single person. \\[5pt]
+Query:
+A ``consistent donation" is one in which every object is from the same Chenhall category.
+Find all donations that were consistent, yet more that one person catalogued object(s) from it.
+For each qualifying donation,
+include in the result one tuple for each person who catalogued objects from it.
+Each tuple should contain the donation ID and person's staff member ID.
+
+
+\item
+Context: Cataloguing a very large donation takes a great deal of diligence.  
+We want to identify and reward staff who have done so. \\[5pt]
+Query:
+The ``largest donation" is the one with the most objects in it
+(there could be ties for largest).
+Find any donor who made a donation that qualifies as largest.
+Report the ID of each staff member who has catalogued an object that was part of any donation
+by any of these donors.
+
+
+\item
+Context: We want to identify staff who are not using tags enough, so that we can provide
+additional training. \\[5pt]
+Query:
+Find staff who have, two or more times,
+catalogued every object in a donation
+but gave none of them tags.
+Report only the SID of these staff members.
+
+
+\item
+Context: We don't want staff isolating themselves. \\[5pt]
+Query:
+Find all pairs of staff members who have catalogued together
+yet neither of them has catalogued with anyone else.
+(Two people have ``catalogued together" if
+they have each catalogued object(s) from the same donation.)
+Put each pair into a tuple that includes their staff IDs and their email addresses.
+Don't include pseudo-duplicates,
+that is, don't report A, B and also B, A.
+
+
+\item
+Context: We are exploring the categorization system. \\[5pt]
+Query:
+A Chenhall category is ``complete" if it has at least one primary term
+and each of its primary terms has at least one secondary term.
+Find all Chenhall categories that are not complete.
+
+\end{enumerate}
+
+
+
+
+
+%----------------------------------------------------------------------------------------------------------------------
+\section*{Part 2: Additional Integrity Constraints}
+
+\begin{enumerate}
+
+\item
+No secondary term can be a primary term or a Chenhall category,
+and no primary term can be a Chenhall category.
+
+
+\item
+A donation can be catalogued only if (a) it has one object, which is worth at least \$100,
+or (b) it has two or more objects, which are worth at least \$150 in total.
+
+
+\item
+Each object catalogued before 2018
+must have exactly three tags.
+
+
+\item
+There are strict rules for who is allowed to catalogue what: 
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+& \multicolumn{3}{|c|}{Chenhall category} \\
+\cline{2-4} 
+Staff type & ``personal artifacts" & ``architectural" & any other category \\
+\hline
+temp & \xmark{} & \xmark{} & \xmark{} \\
+\hline
+volunteer & \cmark{} & \cmark{} & \xmark{} \\
+\hline
+intern & \cmark{} & \cmark{} & \xmark{} \\
+\hline
+permanent & \cmark{} & \cmark{} & \cmark{} \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{enumerate}
+
+
+\end{document}
+
+
+
